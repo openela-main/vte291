@@ -1,0 +1,46 @@
+From bba5901e2cd7fe9c0c7cb30983993d924f793792 Mon Sep 17 00:00:00 2001
+From: Christian Persch <chpe@src.gnome.org>
+Date: Tue, 19 Nov 2019 18:33:12 +0100
+Subject: [PATCH] build: Add no-exceptions sanity check
+
+Some distributions pass -fexceptions in a way that overrides vte's
+own -fno-exceptions. This is a hard error; fail the build.
+
+See https://gitlab.gnome.org/GNOME/gnome-build-meta/issues/207
+
+(cherry picked from commit ff72577bd7d84c30faca3285d7ed4e7f75194f98)
+---
+ src/vteinternal.hh | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/src/vteinternal.hh b/src/vteinternal.hh
+index 1521cd1632fb..0cd20f88c25d 100644
+--- a/src/vteinternal.hh
++++ b/src/vteinternal.hh
+@@ -18,6 +18,23 @@
+ 
+ #pragma once
+ 
++/* BEGIN sanity checks */
++
++/* Some distributions pass -fexceptions in a way that overrides vte's
++ * own -fno-exceptions. This is a hard error; fail the build.
++ * See https://gitlab.gnome.org/GNOME/gnome-build-meta/issues/207
++ */
++#ifdef __EXCEPTIONS
++#error You MUST NOT use -fexceptions to build vte! Fix your build; and DO NOT file a bug upstream!
++#endif
++
++/* While we're at it, check -fno-rtti too */
++#ifdef __GXX_RTTI
++#error You MUST NOT use -frtti to build vte! Fix your build system; and DO NOT file a bug upstream!
++#endif
++
++/* END sanity checks */
++
+ #include <glib.h>
+ 
+ #include "vtedefines.hh"
+-- 
+2.25.4
+
